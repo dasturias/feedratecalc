@@ -99,18 +99,33 @@ export const UNITS = [
 ];
 
 export const BIT_DIAMETERS = [
-  0.031,
-  0.063,
-  0.125,
-  0.250,
-  0.375,
-  0.500,
-  0.625,
-  0.750,
-  1.000,
-  1.250,
-  1.500,
-  2.000
+  { label: '1/32"', value: 1/32 },
+  { label: '1/16"', value: 1/16 },
+  { label: '1/8"', value: 1/8 },
+  { label: '1/4"', value: 1/4 },
+  { label: '1/2"', value: 1/2 },
+  { label: '5/8"', value: 5/8 },
+  { label: '3/4"', value: 3/4 },
+  { label: '1"', value: 1.0 },
+  { label: '1 1/4"', value: 1.25 },
+  { label: '1 1/2"', value: 1.50 },
+  { label: '2"', value: 2.0 },
+];
+
+export const BIT_DIAMETERS_METRIC = [
+  { label: '0.5 mm', value: 0.5/25.4 },
+  { label: '1.0 mm', value: 1.0/25.4 },
+  { label: '2.0 mm', value: 2.0/25.4 },
+  { label: '3.0 mm', value: 3.0/25.4 },
+  { label: '4.0 mm', value: 4.0/25.4 },
+  { label: '5.0 mm', value: 5.0/25.4 },
+  { label: '6.0 mm', value: 6.0/25.4 },
+  { label: '8.0 mm', value: 8.0/25.4 },
+  { label: '10.0 mm', value: 10.0/25.4 },
+  { label: '12.0 mm', value: 12.0/25.4 },
+  { label: '15.0 mm', value: 15.0/25.4 },
+  { label: '20.0 mm', value: 20.0/25.4 },
+  { label: '50.0 mm', value: 50.0/25.4 },
 ];
 
 export const NUM_FLUTES = [

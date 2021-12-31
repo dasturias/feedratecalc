@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Card, Form, Input, Select } from 'antd';
-import { CNC_MODELS, MATERIALS, UNITS, BIT_DIAMETERS, NUM_FLUTES, HelpString } from './constants.jsx';
+import { Card, Checkbox, Form, Input, Select } from 'antd';
+import { CNC_MODELS, MATERIALS, UNITS, BIT_DIAMETERS, BIT_DIAMETERS_METRIC, NUM_FLUTES, HelpString } from './constants.jsx';
 import {
   rpmCalculator,
   feedRateCalculator,
@@ -26,8 +26,25 @@ const App = () => {
   const [flutes, setFlutes] = useState(2);
 
   const sfm = MATERIALS[material].sfm;
-  const chipLoad = chipLoadCalculator(bitDiameter, sfm);
-  const rpms = rpmCalculator(sfm, bitDiameter, router);
+  const defaultChipload = chipLoadCalculator(bitDiameter, sfm);
+  const [chipLoad, setChipLoad] = useState(defaultChipload);
+  const defaultRpms = rpmCalculator(sfm, bitDiameter, router);
+  const [rpms, setRpms] = useState(defaultRpms);
+  const [overrideChipload, setOverrideChipload] = useState(false);
+  const [overrideRpms, setOverrideRpms] = useState(false);
+
+  useEffect(() => {
+    if(!overrideChipload) {
+      setChipLoad(defaultChipload);
+    }
+  }, [bitDiameter, sfm, overrideChipload]);
+
+  useEffect(() => {
+    if(!overrideRpms) {
+      setRpms(defaultRpms);
+    }
+  }, [sfm, bitDiameter, router, overrideRpms]);
+
   const feedRate = feedRateCalculator(rpms, flutes, chipLoad);
   const plungeRate = plungeRateCalculator(feedRate);
   const stepOver = stepOverCalculator(bitDiameter);
@@ -42,7 +59,7 @@ const App = () => {
         <Card title='Inputs'>
           <Form
             layout='formLayout'
-            labelCol={{ 'span': 6 }}
+            labelCol={{ 'span': 7 }}
             form={form}
             labelAlign='right'
             small='small'
@@ -76,12 +93,19 @@ const App = () => {
               <Select
                 options={generateOptions(UNITS)}
                 value={units}
-                onChange={setUnits}
+                onChange={val => {
+                  setUnits(val);
+                  if(val === 'inches') {
+                    setBitDiameter(0.125);
+                  } else {
+                    setBitDiameter(2.0/25.4);
+                  }
+                }}
               />
             </Form.Item>
-            <Form.Item label="Bit Diameter" tooltip='Diamter of the bit'>
+            <Form.Item label="Bit Diameter" tooltip='Diameter of the bit'>
               <Select
-                options={generateOptions(BIT_DIAMETERS)}
+                options={units === 'inches' ? BIT_DIAMETERS : BIT_DIAMETERS_METRIC}
                 value={bitDiameter}
                 onChange={setBitDiameter}
               />
@@ -93,16 +117,46 @@ const App = () => {
                 onChange={setFlutes}
               />
             </Form.Item>
+            <Form.Item label="Override Chip load" tooltip='Override chip load'>
+              <Checkbox checked={overrideChipload} onChange={e => {
+                setOverrideChipload(e.target.checked);
+                // if chipload is being un-overridden set chip load back to the default
+                if(!e.target.checked) {
+                  setChipLoad(defaultChipload);
+                }
+              }}/>
+            </Form.Item>
             <Form.Item label="Chip Load" tooltip={`Chip load in ${units}`}>
               <Input
-                disabled
-                value={chipLoad.toFixed(4)}
+                disabled={!overrideChipload}
+                value={overrideChipload ? chipLoad : chipLoad.toFixed(4)}
+                onChange={e => {
+                  const value = parseFloat(e.target.value);
+                  if(!isNaN(value)) {
+                    setChipLoad(value);
+                  }
+                }}
               />
+            </Form.Item>
+            <Form.Item label="Override Spindle Speed" tooltip='Override Spindle Speed'>
+              <Checkbox checked={overrideRpms} onChange={e => {
+                setOverrideRpms(e.target.checked);
+                // if chipload is being un-overridden set spindle back to the default
+                if(!e.target.checked) {
+                  setRpms(defaultRpms);
+                }
+              }}/>
             </Form.Item>
             <Form.Item label="Spindle Speed" tooltip='Spindle speed in RPMS'>
               <Input
-                disabled
+                disabled={!overrideRpms}
                 value={rpms}
+                onChange={e => {
+                  const value = parseInt(e.target.value);
+                  if(!isNaN(value)) {
+                    setRpms(value);
+                  }
+                }}
               />
             </Form.Item>
             <Form.Item label="Surface Speed" tooltip='Surface speed of material'>
